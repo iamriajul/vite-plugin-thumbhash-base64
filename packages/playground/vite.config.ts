@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { thumbHash } from 'vite-plugin-thumbhash'
+import { thumbHash } from 'vite-plugin-thumbhash-base64'
 
 export default defineConfig({
   plugins: [thumbHash()],

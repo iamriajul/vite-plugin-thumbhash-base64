@@ -1,11 +1,4 @@
-type thumbhash = {
-  thumbSrc: string
-  thumbWidth: number
-  thumbHeight: number
-  originalSrc: string
-  originalWidth: number
-  originalHeight: number
-}
+type thumbhash = string;
 
 declare module '*.jpg?th' {
   const th: thumbhash

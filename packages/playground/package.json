@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "devDependencies": {
-    "vite-plugin-thumbhash": "workspace:*",
+    "vite-plugin-thumbhash-base64": "workspace:*",
     "typescript": "^5.0.0",
     "vite": "^4.2.0"
   },

@@ -1,6 +1,6 @@
 {
-  "name": "vite-plugin-thumbhash",
-  "version": "0.1.6",
+  "name": "vite-plugin-thumbhash-base64",
+  "version": "0.0.2",
   "description": "Add ThumbHash to your vite project.",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
@@ -13,7 +13,8 @@
     "plugin",
     "thumb",
     "image",
-    "avif"
+    "avif",
+    "base64"
   ],
   "files": [
     "dist",
@@ -34,12 +35,12 @@
     "build": "tsup --config tsup.config.ts",
     "bench": "node ./bench.mjs"
   },
-  "homepage": "https://github.com/cijiugechu/vite-plugin-thumbhash",
+  "homepage": "https://github.com/iamriajul/vite-plugin-thumbhash",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cijiugechu/vite-plugin-thumbhash.git"
+    "url": "git@github.com:iamriajul/vite-plugin-thumbhash.git"
   },
-  "bugs": "https://github.com/cijiugechu/vite-plugin-thumbhash/issues",
+  "bugs": "https://github.com/iamriajul/vite-plugin-thumbhash/issues",
   "author": "nemurubaka",
   "license": "MIT",
   "devDependencies": {

@@ -9,9 +9,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="card">
       <button id="counter" type="button"></button>
     </div>
-    <img src=${unoptimized2.thumbSrc} width=${unoptimized2.thumbWidth}
-          height=${unoptimized2.thumbHeight}
-     />
+    <img src=${unoptimized2} class="thumb" />
     <img src=${unoptimized1} />
   </div>
 `

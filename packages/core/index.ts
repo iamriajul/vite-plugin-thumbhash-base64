@@ -1,31 +1,16 @@
-import { createFilter } from '@rollup/pluginutils'
-import { basename } from 'path'
-import { relative } from 'path/posix'
-import { readFile } from 'fs/promises'
-import { loadImage, createCanvas, ImageData } from '@napi-rs/canvas'
-import { rgbaToThumbHash, thumbHashToRGBA } from 'thumbhash-node'
-import type { Plugin, ResolvedConfig } from 'vite'
-
-export type OutputExtension = 'png' | 'jpg' | 'webp' | 'avif'
+import {createFilter} from '@rollup/pluginutils'
+import {createCanvas, loadImage} from '@napi-rs/canvas'
+import type {Plugin, ResolvedConfig} from 'vite'
+import {rgbaToThumbHash} from "thumbhash";
 
 export type Options =
   | {
       include?: Array<string | RegExp> | string | RegExp
       exclude?: Array<string | RegExp> | string | RegExp
-      outputExtension?: OutputExtension
     }
   | undefined
 
-interface LoaderParams {
-  thumbSrc: string
-  thumbWidth: number
-  thumbHeight: number
-  originalSrc: string
-  originalWidth: number
-  originalHeight: number
-}
-
-const loader = (params: LoaderParams) => {
+const loader = (params: string) => {
   return `export default ${JSON.stringify(params)}`
 }
 
@@ -45,48 +30,12 @@ async function loadImageAndConvertToRgba(path: string) {
   ctx.drawImage(image, 0, 0, resizedWidth, resizedHeight)
 
   const imageData = ctx.getImageData(0, 0, resizedWidth, resizedHeight)
-  const rgba = new Uint8Array(imageData.data)
-
+  const rgba = new Uint8Array(imageData.data);
   return {
-    originalWidth: width,
-    originalHeight: height,
-    height: imageData.height,
-    width: imageData.width,
     rgba,
-  }
-}
-
-const fromRGBAToImageBuffer = (
-  rgba: Uint8Array,
-  mimeType: MimeType,
-  width: number,
-  height: number
-) => {
-  const thumb = rgbaToThumbHash(width, height, rgba)
-  const transformedRgba = thumbHashToRGBA(thumb)
-  const imageData = new ImageData(
-    new Uint8ClampedArray(transformedRgba.rgba),
-    transformedRgba.width,
-    transformedRgba.height
-  )
-
-  const canvas = createCanvas(transformedRgba.width, transformedRgba.height)
-  const context = canvas.getContext('2d')
-  //@ts-ignore
-  context.putImageData(imageData, 0, 0)
-  //@ts-ignore
-  const buffer = canvas.toBuffer(mimeType)
-
-  return buffer
-}
-
-type MimeType = 'image/webp' | 'image/jpeg' | 'image/avif' | 'image/png'
-
-const extToMimeTypeMap: Record<OutputExtension, MimeType> = {
-  avif: 'image/avif',
-  jpg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
+    width: resizedWidth,
+    height: resizedHeight,
+  };
 }
 
 const isThumbHash = (id: string) => {
@@ -95,20 +44,8 @@ const isThumbHash = (id: string) => {
 
 const cleanId = (id: string) => id.replace('?thumb', '').replace('?th', '')
 
-const buildViteAsset = (referenceId: string) => `__VITE_ASSET__${referenceId}__`
-
-const buildDataURL = (buf: Buffer, mimeType: MimeType) => {
-  const dataPrefix = `data:${mimeType};base64,`
-
-  const dataURL = `${dataPrefix}${buf.toString('base64')}`
-
-  return dataURL
-}
-
 const thumbHash = (options: Options = {}): Plugin => {
-  const { include, exclude, outputExtension = 'png' } = options
-
-  const bufferMimeType = extToMimeTypeMap[outputExtension]
+  const { include, exclude } = options
 
   const filter = createFilter(include, exclude)
 
@@ -119,7 +56,7 @@ const thumbHash = (options: Options = {}): Plugin => {
   const buildCache = new Map<string, string>()
 
   return {
-    name: 'vite-plugin-thumbhash',
+    name: 'vite-plugin-thumbhash-base64',
     enforce: 'pre',
 
     configResolved(cfg) {
@@ -139,26 +76,13 @@ const thumbHash = (options: Options = {}): Plugin => {
             return devCache.get(id)
           }
 
-          const { rgba, width, height, originalHeight, originalWidth } =
-            await loadImageAndConvertToRgba(cleanedId)
+          const {rgba, width, height} = await loadImageAndConvertToRgba(cleanedId)
 
-          const buffer = fromRGBAToImageBuffer(
-            rgba,
-            bufferMimeType,
-            width,
-            height
-          )
+          const hash = rgbaToThumbHash(width, height, rgba);
 
-          const dataURL = buildDataURL(buffer, bufferMimeType)
+          const base64 = Buffer.from(hash).toString('base64');
 
-          const loadedSource = loader({
-            thumbSrc: dataURL,
-            thumbWidth: width,
-            thumbHeight: height,
-            originalSrc: relative(config.root, cleanedId),
-            originalWidth: originalWidth,
-            originalHeight: originalHeight,
-          })
+          const loadedSource = loader(base64)
 
           devCache.set(id, loadedSource)
 
@@ -169,41 +93,13 @@ const thumbHash = (options: Options = {}): Plugin => {
           return buildCache.get(id)
         }
 
-        const { rgba, width, height, originalHeight, originalWidth } =
-          await loadImageAndConvertToRgba(cleanedId)
+        const {rgba, width, height} = await loadImageAndConvertToRgba(cleanedId)
 
-        const buffer = fromRGBAToImageBuffer(
-          rgba,
-          bufferMimeType,
-          width,
-          height
-        )
+        const hash = rgbaToThumbHash(width, height, rgba);
 
-        const referenceId = this.emitFile({
-          type: 'asset',
-          name: basename(cleanedId).replace(
-            /\.(jpg)|(jpeg)|(png)|(webp)|(avif)/g,
-            `.${outputExtension}`
-          ),
-          source: buffer,
-        })
+        const base64 = Buffer.from(hash).toString('base64');
 
-        const originalRefId = this.emitFile({
-          type: 'asset',
-          name: basename(cleanedId),
-          source: await readFile(cleanedId),
-        })
-
-        // import.meta.ROLLUP_FILE_URL_
-
-        const loadedSource = loader({
-          thumbSrc: buildViteAsset(referenceId),
-          thumbWidth: width,
-          thumbHeight: height,
-          originalSrc: buildViteAsset(originalRefId),
-          originalWidth: originalWidth,
-          originalHeight: originalHeight,
-        })
+        const loadedSource = loader(base64)
 
         buildCache.set(id, loadedSource)
 

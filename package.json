@@ -26,7 +26,7 @@
   "bugs": "https://github.com/jufuku-haijo/ts-lib-starter/issues",
   "scripts": {
     "format": "prettier --write . --ignore-unkown",
-    "build": "pnpm --filter vite-plugin-thumbhash run build",
+    "build": "pnpm --filter vite-plugin-thumbhash-base64 run build",
     "prepublishOnly": "pnpm run build"
   },
   "license": "MIT",
