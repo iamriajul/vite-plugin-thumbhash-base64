@@ -1,6 +1,6 @@
 import './style.css'
-import unoptimized1 from './un-optimized.png'
-import unoptimized2 from './un-optimized.png?thumb'
+import unoptimized1 from './un-optimized.jpg'
+import unoptimized2 from './un-optimized.jpg?thumb'
 import { setupCounter } from './counter'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -9,7 +9,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div class="card">
       <button id="counter" type="button"></button>
     </div>
-    <img src=${unoptimized2} class="thumb" />
+    <img data-hash=${unoptimized2} class="thumb" />
     <img src=${unoptimized1} />
   </div>
 `
