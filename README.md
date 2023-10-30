@@ -1,22 +1,22 @@
-# `vite-plugin-thumbhash`
+# `vite-plugin-thumbhash-base64`
 
 Add [ThumbHash](https://github.com/evanw/thumbhash) to your vite project.
 
 ## Install
 
 ```shell
-npm install vite-plugin-thumbhash --save-dev
+npm install vite-plugin-thumbhash-base64 --save-dev
 ```
 
 ```shell
-pnpm add vite-plugin-thumbhash -D
+pnpm add vite-plugin-thumbhash-base64 -D
 ```
 
 ## Usage
 
 ```ts
 import { defineConfig } from 'vite'
-import { thumbHash } from 'vite-plugin-thumbhash'
+import { thumbHash } from 'vite-plugin-thumbhash-base64'
 
 export default defineConfig({
   plugins: [thumbHash()]
@@ -24,19 +24,12 @@ export default defineConfig({
 ```
 
 ```jsx
-import Image from 'example.jpg?thumb'
+import ImageHash from 'example.jpg?thumb'
 
 //...
-<img src={Image.thumbSrc}
-     width={Image.thumbWidth}
-     height={Image.thumbHeight}
-/>
-
-
-// If you want to import original image
-<img src={Image.originalSrc}
-     width={Image.originalWidth}
-     height={Image.originalHeight}
+<img
+//...
+data-hash={ImageHash}
 />
 ```
 
@@ -44,7 +37,7 @@ import Image from 'example.jpg?thumb'
 
 Add the following code to `vite-env.d.ts` :
 ```ts
-/// <reference types="vite-plugin-thumbhash/client" />
+/// <reference types="vite-plugin-thumbhash-base64/client" />
 ```
 
 ## Options
@@ -62,11 +55,6 @@ type Options =
        * which specifies the files in the build the plugin should ignore.
        */
       exclude?: Array<string | RegExp> | string | RegExp
-      /**
-       * type OutputExtension = 'png' | 'jpg' | 'webp' | 'avif'
-       * @default: 'png'
-       */
-      outputExtension?: OutputExtension
     }
 ```
 
@@ -76,4 +64,4 @@ see [playground](/packages/playground/)
 
 ## License
 
-MIT &copy; [nemurubaka](https://github.com/cijiugechu)
+MIT
